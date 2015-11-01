@@ -1,18 +1,10 @@
 import com.google.common.base.CaseFormat
 import com.google.common.base.Converter
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Node;
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
 
 import java.nio.file.Paths;
-
-String basedir;
-if (Paths.get("./src").toFile().exists()) {
-    basedir = "."
-} else {
-    basedir = "../../.."
-}
 
 class LanguageFeature {
 
@@ -29,7 +21,7 @@ class LanguageFeature {
 
             ret.id = e.attr("id")
             ret.name = e.select("h3").first().childNode(0).toString()
-            ret.className = converter.convert(ret.name.replaceAll(" ", ""))
+            ret.className = "JsonStat" + converter.convert(ret.name.replaceAll(" ", ""))
 
             Elements badges = e.select("span.badge")
 
@@ -72,7 +64,16 @@ class LanguageFeature {
 
 }
 
-generatedSourceBase = "${basedir}/target/generated-sources/jsonstat"
+String basedir;
+if (Paths.get("./src").toFile().exists()) {
+    basedir = "."
+} else {
+    basedir = "../../.."
+}
+
+generatedSourcePackage = "io.mikael.jsonstat"
+
+generatedSourceBase = "${basedir}/target/generated-sources/jsonstat/${generatedSourcePackage.replaceAll("\\.", "/")}"
 
 targetDir = new File("${generatedSourceBase}")
 
@@ -80,24 +81,12 @@ if (!targetDir.isDirectory()) {
     targetDir.mkdirs()
 }
 
-
 format = new File("${basedir}/src/generator/resources/format.html")
 Document doc = Jsoup.parse(format, "UTF-8", "http://json-stat.org/format/");
 
 List<LanguageFeature> features = LanguageFeature.parse(doc)
 
 features.forEach {
-    printf("id: <%s> <%s>%n", it.id, it.name);
-    printf("class: <%s>%n", it.className);
-    printf("types: %s%n", it.types);
-    printf("optional: %s%n", it.isOptional);
-    printf("reserved word: %s%n", it.isReservedWord);
-    printf("external word: %s%n", it.isExternalWord);
-    printf("free word: %s%n", it.isFreeWord);
-    printf("parents: %s%n", it.parents.toString());
-    printf("children: %s%n", it.children.toString());
-    println()
-
     sourceFile = new File("${generatedSourceBase}/${it.className}.java")
 
     if (!sourceFile.isFile()) {
@@ -105,9 +94,11 @@ features.forEach {
     }
 
     sourceFile.text = """
+package ${generatedSourcePackage};
+
 public class ${it.className} {
 
-    // ${it.id} ${it.name}
+    // <${it.id}> <${it.name}>
 
     // types: ${it.types}
 
@@ -116,6 +107,6 @@ public class ${it.className} {
     // parents: ${it.parents}
 
 }
-"""
+"""[1 .. -1]
 
 }
