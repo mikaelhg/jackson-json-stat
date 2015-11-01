@@ -12,5 +12,8 @@ but even more generally:
 * the array content data types aren't often specified or even mentioned in the spec
 * there are fields where "X does not have a standard meaning nor a standard vocabulary"
 * the ID "free word" fields are harmful and pointless, they could just as well be contained
-  in a separate standard JSON object, which wouldn't remove the need to create custom serializers
+  in a separate standard JSON object, which would remove the need to create custom serializers
   and deserializers for "free word" parent objects
+* the `class` field looks like it was meant to distinguish between different container types, but
+  it's not used consistently enough for it to be effective
+
