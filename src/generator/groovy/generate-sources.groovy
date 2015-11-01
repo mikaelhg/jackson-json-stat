@@ -6,15 +6,15 @@ import org.jsoup.select.Elements
 
 import java.nio.file.Paths;
 
-class LanguageFeature {
+public class LanguageFeature {
 
-    String id, name, className;
+    public String id, name, className;
 
-    List<String> types, parents, children;
+    public List<String> types, parents, children;
 
-    boolean isOptional, isReservedWord, isFreeWord, isExternalWord;
+    public boolean isOptional, isReservedWord, isFreeWord, isExternalWord;
 
-    static Map<String, LanguageFeature> parse(final Document doc) {
+    public static Map<String, LanguageFeature> parse(final Document doc) {
         Converter<String, String> converter = CaseFormat.LOWER_CAMEL.converterTo(CaseFormat.UPPER_CAMEL)
         return doc.select("section[id]").collect { e ->
             LanguageFeature ret = new LanguageFeature();
@@ -86,19 +86,20 @@ Document doc = Jsoup.parse(format, "UTF-8", "http://json-stat.org/format/");
 
 Map<String, LanguageFeature> features = LanguageFeature.parse(doc)
 
-features.forEach { key, it ->
-
+features.values().forEach {
     it.parents.forEach({ p ->
         if (!features[p].children.contains(it.id)) {
             println("parent ${features[p].id}.children doesn't know about ${it.id}")
         }
     })
-
     it.children.forEach({ c ->
         if (!features[c].parents.contains(it.id)) {
             println("child ${features[c].id}.parents doesn't know about ${it.id}")
         }
     })
+}
+
+features.values().forEach {
 
     sourceFile = new File("${generatedSourceBase}/${it.className}.java")
 
