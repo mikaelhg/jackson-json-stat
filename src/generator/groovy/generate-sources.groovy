@@ -14,7 +14,7 @@ class LanguageFeature {
 
     boolean isOptional, isReservedWord, isFreeWord, isExternalWord;
 
-    static List<LanguageFeature> parse(final Document doc) {
+    static Map<String, LanguageFeature> parse(final Document doc) {
         Converter<String, String> converter = CaseFormat.LOWER_CAMEL.converterTo(CaseFormat.UPPER_CAMEL)
         return doc.select("section[id]").collect { e ->
             LanguageFeature ret = new LanguageFeature();
@@ -59,7 +59,7 @@ class LanguageFeature {
                     .toList()
 
             return ret
-        }
+        }.collectEntries { [(it.id): it] }
     }
 
 }
@@ -84,9 +84,22 @@ if (!targetDir.isDirectory()) {
 format = new File("${basedir}/src/generator/resources/format.html")
 Document doc = Jsoup.parse(format, "UTF-8", "http://json-stat.org/format/");
 
-List<LanguageFeature> features = LanguageFeature.parse(doc)
+Map<String, LanguageFeature> features = LanguageFeature.parse(doc)
 
-features.forEach {
+features.forEach { key, it ->
+
+    it.parents.forEach({ p ->
+        if (!features[p].children.contains(it.id)) {
+            println("parent ${features[p].id}.children doesn't know about ${it.id}")
+        }
+    })
+
+    it.children.forEach({ c ->
+        if (!features[c].parents.contains(it.id)) {
+            println("child ${features[c].id}.parents doesn't know about ${it.id}")
+        }
+    })
+
     sourceFile = new File("${generatedSourceBase}/${it.className}.java")
 
     if (!sourceFile.isFile()) {
@@ -99,6 +112,8 @@ package ${generatedSourcePackage};
 public class ${it.className} {
 
     // <${it.id}> <${it.name}>
+
+    // optional: ${it.isOptional}
 
     // types: ${it.types}
 
